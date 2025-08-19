@@ -15,12 +15,11 @@ export default function Students() {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [error, setError] = useState("")
 
-  // Cargar estudiantes al montar
+  // Cargar estudiantes
   useEffect(() => {
     fetchStudents()
   }, [])
 
-  // Obtener estudiantes
   const fetchStudents = async () => {
     try {
       setLoading(true)
@@ -39,7 +38,6 @@ export default function Students() {
     }
   }
 
-  // Crear estudiante
   const createStudent = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
@@ -53,12 +51,10 @@ export default function Students() {
       resetForm()
       setError("")
     } catch (err: any) {
-      console.error("Error creating student:", err)
       setError("Error al crear estudiante: " + err.message)
     }
   }
 
-  // Actualizar estudiante
   const updateStudent = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
@@ -77,26 +73,21 @@ export default function Students() {
       resetForm()
       setError("")
     } catch (err: any) {
-      console.error("Error updating student:", err)
       setError("Error al actualizar estudiante: " + err.message)
     }
   }
 
-  // Eliminar estudiante
   const deleteStudent = async (id: number) => {
     if (!confirm("¿Estás seguro de eliminar este estudiante?")) return
     try {
       const { error } = await supabase.from("student").delete().eq("id", id)
       if (error) throw error
       setStudents(students.filter((student) => student.id !== id))
-      setError("")
     } catch (err: any) {
-      console.error("Error deleting student:", err)
       setError("Error al eliminar estudiante: " + err.message)
     }
   }
 
-  // Editar estudiante (cargar en form)
   const editStudent = (student: any) => {
     setFormData({
       Name: student.Name,
@@ -107,13 +98,11 @@ export default function Students() {
     setEditingId(student.id)
   }
 
-  // Reset form
   const resetForm = () => {
     setFormData({ Name: "", Address: "", Phone: "", Observacion: "" })
     setEditingId(null)
   }
 
-  // Handle inputs
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -121,161 +110,170 @@ export default function Students() {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  if (loading) return <div className="p-4">Cargando estudiantes...</div>
+  if (loading) return <div className="p-6 text-lg">⏳ Cargando estudiantes...</div>
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">Gestión de Estudiantes</h1>
+    <div className="min-h-screen bg-gray-100 p-6">
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-4xl font-bold text-gray-800 mb-6 text-center">
+          📚 Gestión de Estudiantes
+        </h1>
 
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
-
-      {/* Formulario */}
-      <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-        <h2 className="text-xl font-semibold mb-4">
-          {editingId ? "Editar Estudiante" : "Nuevo Estudiante"}
-        </h2>
-
-        <form
-          onSubmit={editingId ? updateStudent : createStudent}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4"
-        >
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Nombre
-            </label>
-            <input
-              type="text"
-              name="Name"
-              value={formData.Name}
-              onChange={handleInputChange}
-              className="shadow border rounded w-full py-2 px-3 text-gray-700"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Teléfono
-            </label>
-            <input
-              type="text"
-              name="Phone"
-              value={formData.Phone}
-              onChange={handleInputChange}
-              className="shadow border rounded w-full py-2 px-3 text-gray-700"
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Dirección
-            </label>
-            <input
-              type="text"
-              name="Address"
-              value={formData.Address}
-              onChange={handleInputChange}
-              className="shadow border rounded w-full py-2 px-3 text-gray-700"
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Observaciones
-            </label>
-            <textarea
-              name="Observacion"
-              value={formData.Observacion}
-              onChange={handleInputChange}
-              className="shadow border rounded w-full py-2 px-3 text-gray-700"
-              rows={3}
-            />
-          </div>
-
-          <div className="md:col-span-2 flex gap-2">
-            <button
-              type="submit"
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            >
-              {editingId ? "Actualizar" : "Crear"} Estudiante
-            </button>
-
-            {editingId && (
-              <button
-                type="button"
-                onClick={resetForm}
-                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-              >
-                Cancelar
-              </button>
-            )}
-          </div>
-        </form>
-      </div>
-
-      {/* Lista de estudiantes */}
-      <div className="bg-white shadow-md rounded">
-        <h2 className="text-xl font-semibold p-4 border-b">Lista de Estudiantes</h2>
-
-        {students.length === 0 ? (
-          <p className="p-4 text-gray-500">No hay estudiantes registrados</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    ID
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Nombre
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Teléfono
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Dirección
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Observaciones
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Acciones
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {students.map((student) => (
-                  <tr key={student.id}>
-                    <td className="px-6 py-4 text-sm text-gray-900">{student.id}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{student.Name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{student.Phone}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{student.Address}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{student.Observacion}</td>
-                    <td className="px-6 py-4 text-sm font-medium space-x-2">
-                      <button
-                        onClick={() => editStudent(student)}
-                        className="text-indigo-600 hover:text-indigo-900"
-                      >
-                        Editar
-                      </button>
-                      <button
-                        onClick={() => deleteStudent(student.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Eliminar
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {error && (
+          <div className="bg-red-200 border border-red-400 text-red-800 px-4 py-3 rounded mb-4">
+            {error}
           </div>
         )}
+
+        {/* Formulario */}
+        <div className="bg-gray-50 shadow-lg rounded-lg px-8 pt-6 pb-8 mb-6 border border-gray-200">
+          <h2 className="text-2xl font-semibold mb-4 text-gray-700">
+            {editingId ? "✏️ Editar Estudiante" : "➕ Nuevo Estudiante"}
+          </h2>
+
+          <form
+            onSubmit={editingId ? updateStudent : createStudent}
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          >
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">
+                Nombre
+              </label>
+              <input
+                type="text"
+                name="Name"
+                value={formData.Name}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border text-black border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">
+                Teléfono
+              </label>
+              <input
+                type="text"
+                name="Phone"
+                value={formData.Phone}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border text-black border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-gray-700 font-medium mb-2">
+                Dirección
+              </label>
+              <input
+                type="text"
+                name="Address"
+                value={formData.Address}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border text-black border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-gray-700 font-medium mb-2">
+                Observaciones
+              </label>
+              <textarea
+                name="Observacion"
+                value={formData.Observacion}
+                onChange={handleInputChange}
+                rows={3}
+                className="w-full px-3 py-2 border text-black border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
+              />
+            </div>
+
+            <div className="md:col-span-2 flex gap-3">
+              <button
+                type="submit"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg shadow transition"
+              >
+                {editingId ? "Actualizar" : "Crear"} Estudiante
+              </button>
+
+              {editingId && (
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="bg-gray-500 hover:bg-gray-600 text-white font-semibold px-4 py-2 rounded-lg shadow transition"
+                >
+                  Cancelar
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
+
+        {/* Lista de estudiantes */}
+        <div className="bg-gray-50 shadow-lg rounded-lg border border-gray-200">
+          <h2 className="text-2xl font-semibold p-4 border-b text-gray-700">
+            📋 Lista de Estudiantes
+          </h2>
+
+          {students.length === 0 ? (
+            <p className="p-4 text-gray-500">No hay estudiantes registrados</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead className="bg-gray-200">
+                  <tr>
+                    {["ID", "Nombre", "Teléfono", "Dirección", "Observaciones", "Acciones"].map((header) => (
+                      <th
+                        key={header}
+                        className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wide"
+                      >
+                        {header}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {students.map((student) => (
+                    <tr
+                      key={student.id}
+                      className="hover:bg-amber-300 transition"
+                    >
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {student.id}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {student.Name}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {student.Phone}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {student.Address}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {student.Observacion}
+                      </td>
+                      <td className="p-3 border-b text-center space-x-2">
+                        <button
+                          onClick={() => editStudent(student)}
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md transition-transform transform hover:scale-105"
+                        >
+                          ✏️Editar
+                        </button>
+                        <button
+                          onClick={() => deleteStudent(student.id)}
+                          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow-md transition-transform transform hover:scale-105"
+                        >
+                          🗑️Eliminar
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
